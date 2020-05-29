@@ -1,0 +1,7 @@
+## Directories
+node_modules
+resources
+
+## Files
+._*
+.DS_Store

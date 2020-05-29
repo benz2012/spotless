@@ -3,12 +3,33 @@
 <head>
   <title>Spotless for Spotify</title>
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+  </style>
 </head>
 <body>
   <div id="app">
 
     <p>{{ message }}</p>
+    <p>Current User: {{ user_id }}</p>
+
+    <button v-on:click="getPlaylists">Load Playlists</button>
+    <ul>
+      <li v-for="playlist in playlists">
+        {{ playlist.name }} ({{ playlist.tracks.total }} tracks) <button v-on:click="getTracksForPlaylist(playlist.id)">Cleanup</button>
+      </li>
+    </ul>
+
+    <hr />
+
+    <ol>
+      <li v-for="track in tracks">
+        {{ track.name }} by {{ track.artists }}
+      </li>
+    </ol>
 
   </div>
   <script src="/index.js"></script>

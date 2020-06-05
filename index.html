@@ -19,15 +19,23 @@
     <button v-on:click="getPlaylists">Load Playlists</button>
     <ul>
       <li v-for="playlist in playlists">
-        {{ playlist.name }} ({{ playlist.tracks.total }} tracks) <button v-on:click="getTracksForPlaylist(playlist.id)">Cleanup</button>
+        <b v-if="selectedPlaylist === playlist.id">
+          {{ playlist.name }} ({{ playlist.tracks.total }} tracks) <button v-on:click="getTracksForPlaylist(playlist.id)">Cleanup</button>
+        </b>
+        <div v-else>
+          {{ playlist.name }} ({{ playlist.tracks.total }} tracks) <button v-on:click="getTracksForPlaylist(playlist.id)">Cleanup</button>
+        </div>
       </li>
     </ul>
 
     <hr />
 
+    <h3>Cleaning up: {{ selectedPlaylistName }}</h3>
+    <div v-if="targetLoading">Loading</div>
+
     <ol>
-      <li v-for="track in tracks">
-        {{ track.name }} by {{ track.artists }}
+      <li v-for="track in sortedTracks">
+        {{ track.name }} by {{ track.artists }} on {{ track.added_at }}
       </li>
     </ol>
 

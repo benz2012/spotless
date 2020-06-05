@@ -33,11 +33,16 @@
     <h3>Cleaning up: {{ selectedPlaylistName }}</h3>
     <div v-if="targetLoading">Loading</div>
 
-    <ol>
-      <li v-for="track in sortedTracks">
-        {{ track.name }} by {{ track.artists }} on {{ track.added_at }}
-      </li>
-    </ol>
+    <div v-if="targetTrack !== null">
+      <button v-on:click="playAudio(targetTrack.preview_url)">Start cleaning!</button>
+      <button v-on:click="nextTrack()">Next Song ></button>
+      <button v-on:click="pauseAudio()">Stop</button>
+      <p style="color: red">{{ playbackError }}</p>
+      <h4>
+        {{ targetTrack.name }} by {{ targetTrack.artists }} on {{ targetTrack.added_at }}
+      </h4>
+      <img v-bind:src="targetTrack.album.images[0].url" style="max-width: 200px" />
+    </div>
 
   </div>
   <script src="/index.js"></script>

@@ -9,6 +9,10 @@ var app = new Vue({
     selectedPlaylist: null,
     tracks: [],
     loaded: false,
+    started: false,
+    targetTrack: null,
+    playbackError: '',
+    audio: new Audio(),
   },
   computed: {
     targetLoading: function () {
@@ -22,6 +26,17 @@ var app = new Vue({
       if (!this.loaded) return []
       return this.tracks.sort((a, b) => a.added_at.localeCompare(b.added_at))
     },
+  },
+  created: function () {
+    // Any time audio is requested to load, start playing it when available
+    this.audio.addEventListener('canplaythrough', () => {
+      this.audio.play()
+    })
+
+    // Any time a song has ended, try to play the next one
+    this.audio.addEventListener('ended', () => {
+      app.nextTrack()
+    })
   },
   methods: {
     getPlaylists: function () {
@@ -45,6 +60,7 @@ var app = new Vue({
           app.getTracksAndAppend(data.next)
         } else {
           this.loaded = true
+          this.targetTrack = app.sortedTracks[0]
         }
       })
     },
@@ -52,7 +68,33 @@ var app = new Vue({
       this.selectedPlaylist = playlist_id
       this.tracks = []
       this.loaded = false
-      app.getTracksAndAppend(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks`)
+      app.getTracksAndAppend(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks?market=US`)
+    },
+    playAudio: function (audio_url) {
+      this.playbackError = ''
+      if (!audio_url) {
+        this.playbackError = 'No audio preview found!'
+        return app.pauseAudio()
+      }
+      this.audio.src = audio_url
+      this.audio.load()
+    },
+    pauseAudio: function () {
+      this.audio.pause()
+    },
+    nextTrack: function () {
+      const targetTrackIndex = app.sortedTracks.findIndex(elm => elm.id === this.targetTrack.id)
+      if (targetTrackIndex === -1) {
+        return app.pauseAudio()
+      }
+
+      nextTrackIndex = targetTrackIndex + 1
+      if (nextTrackIndex >= this.sortedTracks.length) {
+        return app.pauseAudio()
+      }
+
+      this.targetTrack = this.sortedTracks[targetTrackIndex + 1]
+      app.playAudio(this.targetTrack.preview_url)
     },
   },
 })

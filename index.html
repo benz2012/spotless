@@ -4,6 +4,8 @@
   <title>Spotless for Spotify</title>
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <script src="./timeAgo.js"></script>
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
@@ -30,7 +32,7 @@
 
     <hr />
 
-    <h3>Archiving songs into:
+    <h3>Archiving tracks into:
       <span v-if="archivePlaylistName === ''" style="color: rgb(200, 200, 200)"><em>Spotless Archive</em></span>
       <span v-else>{{ archivePlaylistName }}</span>
     </h3>
@@ -44,12 +46,22 @@
       <button v-on:click="playAudio(targetTrack.preview_url)">Start cleaning!</button>
       <button v-on:click="nextTrack()">Next Song ></button>
       <button v-on:click="pauseAudio()">Stop</button>
+
       <p style="color: red">{{ playbackError }}</p>
+
       <h4>
-        {{ targetTrack.name }} by {{ targetTrack.artists }} on {{ targetTrack.added_at }}
+        {{ targetTrack.name }} by {{ targetTrack.artists }}
       </h4>
       <img v-bind:src="targetTrack.album.images[0].url" style="max-width: 200px" />
+      <div>You added this {{ timeAgo(targetTrack.added_at) }}</div>
+
+      <div>
+        <button v-on:click="archiveTrack(targetTrack)" style="display: inline-block">Archive 📦</button>
+        <button v-on:click="nextTrack()" style="display: inline-block">Keep 👍</button>
+      </div>
     </div>
+
+    <div style="margin-bottom: 100px"></div>
 
   </div>
   <script src="/index.js"></script>

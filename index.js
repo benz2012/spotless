@@ -1,7 +1,9 @@
-axios.defaults.headers.common['Authorization'] = 'Bearer BQAXp5aRGSAyRLAIkwRBmNu-FXpPIrlKb5K7Voyt2RXE2S_RQT1L0QvjXGd-3nmcIfKo0IpsXezJrAGhGTB92Rpk9JbkXNaqOahX5wLClwXpy7-zVCTrnngMISF2H-knp7mtZYQ_RTA6_hw5jzPwl-mjQ9H_TfbRki5XdY3Ez3j6D_aNITKA3K23KGQj6qtxgn4zTmVpuINsrfeozPa_1yImB5yYCw'
+axios.defaults.headers.common['Authorization'] = 'Bearer ...'
 
 const app = new Vue({
   el: '#app',
+
+
   data: {
     message: 'Spotless: Clean up your music',
     user_id: 'enigmacubed',
@@ -15,23 +17,30 @@ const app = new Vue({
     playbackError: '',
     audio: new Audio(),
   },
+
+
   computed: {
     targetLoading: function () {
       return this.selectedPlaylist && !this.loaded
     },
+
     selectedPlaylistName: function () {
       const selected = this.playlists.filter(plst => plst.id === this.selectedPlaylist)
       return selected.length > 0 ? selected[0].name : ''
     },
+
     archivePlaylistName: function () {
       const selected = this.playlists.filter(plst => plst.id === this.archivePlaylist)
       return selected.length > 0 ? selected[0].name : ''
     },
+
     sortedTracks: function () {
       if (!this.loaded) return []
       return this.tracks.sort((a, b) => a.added_at.localeCompare(b.added_at))
     },
   },
+
+
   created: function () {
     // Any time audio is requested to load, start playing it when available
     this.audio.addEventListener('canplaythrough', () => {
@@ -43,6 +52,8 @@ const app = new Vue({
       app.nextTrack()
     })
   },
+
+
   methods: {
     getPlaylistsAndAppend: function (url) {
       axios.get(url).then(({ data }) => {
@@ -50,6 +61,7 @@ const app = new Vue({
         if (data.next) app.getPlaylistsAndAppend(data.next)
       })
     },
+
     getPlaylistsForUser: function (user_id) {
       this.selectedPlaylist = null
       this.playlists = []
@@ -57,6 +69,7 @@ const app = new Vue({
       this.loaded = false
       app.getPlaylistsAndAppend(`https://api.spotify.com/v1/users/${user_id}/playlists`)
     },
+
     simplifyTracks: (track_list) => (
       track_list
         .map(item => Object.assign({}, item.track, { added_at: item.added_at }))
@@ -65,6 +78,7 @@ const app = new Vue({
           artists: item.artists.map(artist => artist.name).join(', '),
         }))
     ),
+
     getTracksAndAppend: function (url) {
       axios.get(url).then(({ data }) => {
         next_tracks = app.simplifyTracks(data.items)
@@ -77,15 +91,18 @@ const app = new Vue({
         }
       })
     },
+
     getTracksForPlaylist: function (playlist_id) {
       this.selectedPlaylist = playlist_id
       this.tracks = []
       this.loaded = false
       app.getTracksAndAppend(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks?market=US`)
     },
+
     selectArchivePlaylist: function (playlist_id) {
       this.archivePlaylist = playlist_id
     },
+
     upsertArchivePlaylist: function (user_id) {
       const defaultName = 'Spotless Archive'
       const possibly = this.playlists.filter(plst => plst.name === defaultName)
@@ -105,6 +122,7 @@ const app = new Vue({
         })
         .catch(console.error)
     },
+
     playAudio: function (audio_url) {
       this.playbackError = ''
       if (!audio_url) {
@@ -114,9 +132,11 @@ const app = new Vue({
       this.audio.src = audio_url
       this.audio.load()
     },
+
     pauseAudio: function () {
       this.audio.pause()
     },
+
     nextTrack: function () {
       const targetTrackIndex = app.sortedTracks.findIndex(elm => elm.id === this.targetTrack.id)
       if (targetTrackIndex === -1) {
@@ -131,8 +151,13 @@ const app = new Vue({
       this.targetTrack = this.sortedTracks[targetTrackIndex + 1]
       app.playAudio(this.targetTrack.preview_url)
     },
-  },
-})
+
+    timeAgo: timeAgo,
+  }, // End Methods
+
+
+}) // End Vue App Instance
+
 
 Vue.component('playlist-item', {
   props: ['playlist', 'selected'],

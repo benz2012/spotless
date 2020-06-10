@@ -1,12 +1,13 @@
-axios.defaults.headers.common['Authorization'] = 'Bearer ...'
+axios.defaults.headers.common['Authorization'] = 'Bearer BQAXp5aRGSAyRLAIkwRBmNu-FXpPIrlKb5K7Voyt2RXE2S_RQT1L0QvjXGd-3nmcIfKo0IpsXezJrAGhGTB92Rpk9JbkXNaqOahX5wLClwXpy7-zVCTrnngMISF2H-knp7mtZYQ_RTA6_hw5jzPwl-mjQ9H_TfbRki5XdY3Ez3j6D_aNITKA3K23KGQj6qtxgn4zTmVpuINsrfeozPa_1yImB5yYCw'
 
-var app = new Vue({
+const app = new Vue({
   el: '#app',
   data: {
     message: 'Spotless: Clean up your music',
     user_id: 'enigmacubed',
     playlists: [],
     selectedPlaylist: null,
+    archivePlaylist: null,
     tracks: [],
     loaded: false,
     started: false,
@@ -20,6 +21,10 @@ var app = new Vue({
     },
     selectedPlaylistName: function () {
       const selected = this.playlists.filter(plst => plst.id === this.selectedPlaylist)
+      return selected.length > 0 ? selected[0].name : ''
+    },
+    archivePlaylistName: function () {
+      const selected = this.playlists.filter(plst => plst.id === this.archivePlaylist)
       return selected.length > 0 ? selected[0].name : ''
     },
     sortedTracks: function () {
@@ -39,10 +44,18 @@ var app = new Vue({
     })
   },
   methods: {
-    getPlaylists: function () {
-      axios
-        .get(`https://api.spotify.com/v1/users/${this.user_id}/playlists`)
-        .then(response => (this.playlists = response.data.items))
+    getPlaylistsAndAppend: function (url) {
+      axios.get(url).then(({ data }) => {
+        this.playlists.push(...data.items)
+        if (data.next) app.getPlaylistsAndAppend(data.next)
+      })
+    },
+    getPlaylistsForUser: function (user_id) {
+      this.selectedPlaylist = null
+      this.playlists = []
+      this.tracks = []
+      this.loaded = false
+      app.getPlaylistsAndAppend(`https://api.spotify.com/v1/users/${user_id}/playlists`)
     },
     simplifyTracks: (track_list) => (
       track_list
@@ -69,6 +82,28 @@ var app = new Vue({
       this.tracks = []
       this.loaded = false
       app.getTracksAndAppend(`https://api.spotify.com/v1/playlists/${playlist_id}/tracks?market=US`)
+    },
+    selectArchivePlaylist: function (playlist_id) {
+      this.archivePlaylist = playlist_id
+    },
+    upsertArchivePlaylist: function (user_id) {
+      const defaultName = 'Spotless Archive'
+      const possibly = this.playlists.filter(plst => plst.name === defaultName)
+      if (possibly.length > 0) {
+        return app.selectArchivePlaylist(possibly[0].id)
+      }
+
+      axios
+        .post(`https://api.spotify.com/v1/users/${user_id}/playlists`, {
+          name: defaultName,
+          public: false,
+          description: 'Music that you cleaned out of other playlists.'
+        })
+        .then(({ data: newPlaylist }) => {
+          this.playlists.push(newPlaylist)
+          app.selectArchivePlaylist(newPlaylist.id)
+        })
+        .catch(console.error)
     },
     playAudio: function (audio_url) {
       this.playbackError = ''
@@ -97,4 +132,15 @@ var app = new Vue({
       app.playAudio(this.targetTrack.preview_url)
     },
   },
+})
+
+Vue.component('playlist-item', {
+  props: ['playlist', 'selected'],
+  template: `
+      <li v-bind:style="{ fontWeight: [selected ? 'bold' : 'normal' ] }">
+        {{ playlist.name }} ({{ playlist.tracks.total }} tracks)
+        <button v-on:click="$emit('clean-this', playlist.id)">Cleanup</button>
+        <button v-on:click="$emit('archive-into', playlist.id)">Archive Into</button>
+      </li>
+    `,
 })

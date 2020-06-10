@@ -16,17 +16,24 @@
     <p>{{ message }}</p>
     <p>Current User: {{ user_id }}</p>
 
-    <button v-on:click="getPlaylists">Load Playlists</button>
+    <button v-on:click="getPlaylistsForUser(user_id)">Load Playlists</button>
     <ul>
-      <li v-for="playlist in playlists">
-        <b v-if="selectedPlaylist === playlist.id">
-          {{ playlist.name }} ({{ playlist.tracks.total }} tracks) <button v-on:click="getTracksForPlaylist(playlist.id)">Cleanup</button>
-        </b>
-        <div v-else>
-          {{ playlist.name }} ({{ playlist.tracks.total }} tracks) <button v-on:click="getTracksForPlaylist(playlist.id)">Cleanup</button>
-        </div>
-      </li>
+      <playlist-item
+        v-for="playlist in playlists"
+        v-bind:key="playlist.id"
+        v-bind:playlist="playlist"
+        v-bind:selected="selectedPlaylist === playlist.id"
+        v-on:clean-this="getTracksForPlaylist"
+        v-on:archive-into="selectArchivePlaylist"
+      />
     </ul>
+
+    <hr />
+
+    <h3>Archiving songs into:
+      <span v-if="archivePlaylistName === ''" style="color: rgb(200, 200, 200)"><em>Spotless Archive</em></span>
+      <span v-else>{{ archivePlaylistName }}</span>
+    </h3>
 
     <hr />
 

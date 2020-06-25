@@ -43,21 +43,25 @@
     <div v-if="targetLoading">Loading</div>
 
     <div v-if="targetTrack !== null">
-      <button v-on:click="playAudio(targetTrack.preview_url)">Start cleaning!</button>
-      <button v-on:click="nextTrack()">Next Song ></button>
-      <button v-on:click="pauseAudio()">Stop</button>
+      <button v-on:click="startCleaning()">Start cleaning!</button>
+      <span v-if="started === true">
+        <button v-on:click="nextTrack()">Next Song ></button>
+        <button v-on:click="pauseAudio()">Stop</button>
+      </span>
 
-      <p style="color: red">{{ playbackError }}</p>
+      <div v-if="started === true">
+        <p style="color: red">{{ playbackError }}</p>
 
-      <h4>
-        {{ targetTrack.name }} by {{ targetTrack.artists }}
-      </h4>
-      <img v-bind:src="targetTrack.album.images[0].url" style="max-width: 200px" />
-      <div>You added this {{ timeAgo(targetTrack.added_at) }}</div>
+        <h4>
+          {{ targetTrack.name }} by {{ targetTrack.artists }}
+        </h4>
+        <img v-bind:src="targetTrack.album.images[0].url" style="max-width: 200px" />
+        <div>You added this {{ timeAgo(targetTrack.added_at) }}</div>
 
-      <div>
-        <button v-on:click="archiveTrack(targetTrack)" style="display: inline-block">Archive 📦</button>
-        <button v-on:click="nextTrack()" style="display: inline-block">Keep 👍</button>
+        <div>
+          <button v-on:click="archiveTrack(selectedPlaylist, targetTrack.id)" style="display: inline-block">Archive 📦</button>
+          <button v-on:click="nextTrack()" style="display: inline-block">Keep 👍</button>
+        </div>
       </div>
     </div>
 

@@ -123,6 +123,12 @@ const app = new Vue({
         .catch(console.error)
     },
 
+    startCleaning: function () {
+      app.upsertArchivePlaylist()
+      this.started = true
+      app.playAudio(this.targetTrack.preview_url)
+    },
+
     playAudio: function (audio_url) {
       this.playbackError = ''
       if (!audio_url) {
@@ -150,6 +156,26 @@ const app = new Vue({
 
       this.targetTrack = this.sortedTracks[targetTrackIndex + 1]
       app.playAudio(this.targetTrack.preview_url)
+    },
+
+    archiveTrack: function (playlist_id, track_id) {
+      const fromPlaylist = `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`
+      const toPlaylist = `https://api.spotify.com/v1/playlists/${this.archivePlaylist}/tracks`
+      const trackURI = `spotify:track:${track_id}`
+      axios({
+        method: 'delete',
+        url: fromPlaylist,
+        data: { tracks: [{ 'uri': trackURI }] },
+      }).then((response) => {
+        if (response.status >= 200 && response.status < 300) {
+          return axios.post(toPlaylist, { uris: [trackURI] })
+        }
+        return Promise.reject(response)
+      }).then(({ status }) => {
+        if (status >= 200 && status < 300) {
+          app.nextTrack()
+        }
+      }).catch(console.error)
     },
 
     timeAgo: timeAgo,
